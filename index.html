@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NexaCore IT Consulting</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <style>
     * {
@@ -49,7 +51,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -123,11 +125,11 @@
     }
 
     .hero-card {
-      background: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(10px);
       border-radius: 24px;
       padding: 40px;
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .hero-card h3 {
@@ -181,7 +183,7 @@
       background: white;
       padding: 32px;
       border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
       transition: 0.3s;
     }
 
@@ -229,14 +231,14 @@
       height: 260px;
       object-fit: cover;
       border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
 
     .contact {
       background: white;
       border-radius: 30px;
       padding: 60px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
 
     .contact form {
@@ -291,6 +293,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="topbar">
@@ -368,9 +371,9 @@
       </div>
 
       <div class="service-card">
-        <h3>Infrastructure Support</h3>
+        <h3>Web Site Hosting</h3>
         <p>
-          Monitoring, incident management, production support, and platform reliability engineering.
+          End-to-end design, secure deployment, and reliable cloud hosting tailored to keep your business online 24/7.
         </p>
       </div>
     </div>
@@ -405,9 +408,12 @@
     </div>
 
     <div class="gallery-grid">
-      <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop" alt="IT Team">
-      <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1200&auto=format&fit=crop" alt="Office Meeting">
-      <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop" alt="Technology Solutions">
+      <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop"
+        alt="IT Team">
+      <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1200&auto=format&fit=crop"
+        alt="Office Meeting">
+      <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop"
+        alt="Technology Solutions">
     </div>
   </section>
 
@@ -418,7 +424,7 @@
         <p>Tell us about your next technology initiative.</p>
       </div>
 
-      <form action="https://formspree.io/f/xvzyglrd" method="POST">
+      <form id="contact-form" action="https://formspree.danysamuel.workers.dev" method="POST">
         <input type="text" name="name" placeholder="Your Name" required>
 
         <input type="email" name="email" placeholder="Your Email" required>
@@ -426,7 +432,10 @@
         <input type="text" name="company" placeholder="Company Name">
 
         <textarea name="message" placeholder="Tell us about your project..." required></textarea>
-
+        <div id="captcha-box" style="padding:12px;background:#f4f4f4;border-radius:12px;">
+          <label id="captcha-question" style="font-weight:600;"></label>
+          <input type="number" id="captcha-answer" placeholder="Enter answer" required>
+        </div>
         <button type="submit" class="btn-primary">Send Message</button>
       </form>
     </div>
@@ -436,5 +445,32 @@
     <p>© 2026 NexaCore IT Consulting. All rights reserved.</p>
   </footer>
 
+  <script>
+    let correctAnswer;
+
+    function generateCaptcha() {
+      const a = Math.floor(Math.random() * 10);
+      const b = Math.floor(Math.random() * 10);
+      correctAnswer = a + b;
+
+      document.getElementById("captcha-question").innerText =
+        `What is ${a} + ${b}?`;
+    }
+
+    document.addEventListener("DOMContentLoaded", generateCaptcha);
+
+    document.getElementById("contact-form").addEventListener("submit", function (e) {
+      const userAnswer = parseInt(document.getElementById("captcha-answer").value);
+
+      if (userAnswer !== correctAnswer) {
+        e.preventDefault();
+        alert("Incorrect CAPTCHA. Please try again.");
+        generateCaptcha();
+        document.getElementById("captcha-answer").value = "";
+      }
+    });
+  </script>
+
 </body>
+
 </html>
