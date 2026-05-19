@@ -371,9 +371,9 @@
       </div>
 
       <div class="service-card">
-        <h3>Web Site Hosting</h3>
+        <h3>Infrastructure Support</h3>
         <p>
-          End-to-end design, secure deployment, and reliable cloud hosting tailored to keep your business online 24/7.
+          Monitoring, incident management, production support, and platform reliability engineering.
         </p>
       </div>
     </div>
@@ -424,7 +424,7 @@
         <p>Tell us about your next technology initiative.</p>
       </div>
 
-      <form id="contact-form" action="https://formspree.danysamuel.workers.dev" method="POST">
+      <form action="https://formspree.danysamuel.workers.dev" method="POST">
         <input type="text" name="name" placeholder="Your Name" required>
 
         <input type="email" name="email" placeholder="Your Email" required>
@@ -448,29 +448,74 @@
   <script>
     let correctAnswer;
 
+    // 1. Generate the CAPTCHA digits cleanly
     function generateCaptcha() {
-      const a = Math.floor(Math.random() * 10);
-      const b = Math.floor(Math.random() * 10);
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
       correctAnswer = a + b;
 
-      document.getElementById("captcha-question").innerText =
-        `What is ${a} + ${b}?`;
+      const questionLabel = document.getElementById("captcha-question");
+      if (questionLabel) {
+        questionLabel.innerText = `What is ${a} + ${b}?`;
+      }
     }
 
+    // Initialize CAPTCHA immediately when the window loads
     document.addEventListener("DOMContentLoaded", generateCaptcha);
 
-    document.getElementById("contact-form").addEventListener("submit", function (e) {
-      const userAnswer = parseInt(document.getElementById("captcha-answer").value);
+    // 2. Intercept and process the submission
+    const contactForm = document.getElementById("contact-form");
+    if (contactForm) {
+      contactForm.addEventListener("submit", async function (e) {
+        e.preventDefault(); // Stop raw JSON redirect
 
-      if (userAnswer !== correctAnswer) {
-        e.preventDefault();
-        alert("Incorrect CAPTCHA. Please try again.");
-        generateCaptcha();
-        document.getElementById("captcha-answer").value = "";
-      }
-    });
+        const submitButton = contactForm.querySelector('button[type="submit"]');
+        const userAnswerInput = document.getElementById("captcha-answer");
+        const userAnswer = parseInt(userAnswerInput.value, 10);
+
+        // Verify CAPTCHA
+        if (userAnswer !== correctAnswer) {
+          alert("Incorrect CAPTCHA answer. Please calculate again.");
+          generateCaptcha();
+          userAnswerInput.value = "";
+          return;
+        }
+
+        // Update button UI state
+        submitButton.disabled = true;
+        submitButton.innerText = "Sending Message...";
+
+        // Target form elements explicitly via contactForm variable
+        const formData = new FormData(contactForm);
+
+        try {
+          const response = await fetch(contactForm.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+              "Accept": "application/json"
+            }
+          });
+
+          if (response.ok) {
+            alert("Thank you! Your message has been sent successfully.");
+            contactForm.reset();
+            generateCaptcha();
+          } else {
+            throw new Error("Server communication error.");
+          }
+
+        } catch (error) {
+          console.error("Submission Error:", error);
+          alert("Oops! Something went wrong delivering your message. Please try again.");
+        } finally {
+          // Restore button UI state
+          submitButton.disabled = false;
+          submitButton.innerText = "Send Message";
+        }
+      });
+    }
   </script>
-
 </body>
 
 </html>
