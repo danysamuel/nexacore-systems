@@ -381,75 +381,96 @@
 <p>&copy; 2026 NexaCore IT Consulting. All rights reserved.</p>
 </footer>
 <script>
-    let correctAnswer;
+  let correctAnswer;
 
-    // 1. Generate the CAPTCHA digits cleanly
-    function generateCaptcha() {
-      const a = Math.floor(Math.random() * 10) + 1;
-      const b = Math.floor(Math.random() * 10) + 1;
-      correctAnswer = a + b;
+  function generateCaptcha() {
+    const a = Math.floor(Math.random() * 10) + 1;
+    const b = Math.floor(Math.random() * 10) + 1;
+    correctAnswer = a + b;
+    const questionLabel = document.getElementById("captcha-question");
+    if (questionLabel) questionLabel.innerText = `What is ${a} + ${b}?`;
+  }
 
-      const questionLabel = document.getElementById("captcha-question");
-      if (questionLabel) {
-        questionLabel.innerText = `What is ${a} + ${b}?`;
+  function showMessage(type, text) {
+    // Remove existing message if any
+    const existing = document.getElementById("form-message");
+    if (existing) existing.remove();
+
+    const msg = document.createElement("div");
+    msg.id = "form-message";
+    msg.innerText = text;
+    msg.style.cssText = `
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-weight: 500;
+      font-size: 15px;
+      margin-top: 8px;
+      animation: fadeIn 0.3s ease;
+      ${type === "success"
+        ? "background:#e8f5e9; color:#2e7d32; border: 1px solid #a5d6a7;"
+        : "background:#fce4ec; color:#c62828; border: 1px solid #ef9a9a;"
       }
-    }
+    `;
 
-    // Initialize CAPTCHA immediately when the window loads
-    document.addEventListener("DOMContentLoaded", generateCaptcha);
+    // Add fade-in animation
+    const style = document.createElement("style");
+    style.textContent = `@keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }`;
+    document.head.appendChild(style);
 
-    // 2. Intercept and process the submission
-    const contactForm = document.getElementById("contact-form");
-    if (contactForm) {
-      contactForm.addEventListener("submit", async function (e) {
-        e.preventDefault(); // Stop raw JSON redirect
+    const form = document.getElementById("contact-form");
+    form.appendChild(msg);
 
-        const submitButton = contactForm.querySelector('button[type="submit"]');
-        const userAnswerInput = document.getElementById("captcha-answer");
-        const userAnswer = parseInt(userAnswerInput.value, 10);
+    // Auto-remove after 5 seconds
+    setTimeout(() => msg.remove(), 5000);
+  }
 
-        // Verify CAPTCHA
-        if (userAnswer !== correctAnswer) {
-          alert("Incorrect CAPTCHA answer. Please calculate again.");
+  document.addEventListener("DOMContentLoaded", generateCaptcha);
+
+  const contactForm = document.getElementById("contact-form");
+  if (contactForm) {
+    contactForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const submitButton = contactForm.querySelector('button[type="submit"]');
+      const userAnswerInput = document.getElementById("captcha-answer");
+      const userAnswer = parseInt(userAnswerInput.value, 10);
+
+      if (userAnswer !== correctAnswer) {
+        showMessage("error", "❌ Incorrect CAPTCHA answer. Please try again.");
+        generateCaptcha();
+        userAnswerInput.value = "";
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.innerText = "Sending...";
+
+      const formData = new FormData(contactForm);
+
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          body: formData,
+          headers: { "Accept": "application/json" }
+        });
+
+        if (response.ok) {
+          showMessage("success", "✅ Thank you! Your message has been sent successfully.");
+          contactForm.reset();
           generateCaptcha();
-          userAnswerInput.value = "";
-          return;
+        } else {
+          throw new Error("Server error");
         }
 
-        // Update button UI state
-        submitButton.disabled = true;
-        submitButton.innerText = "Sending Message...";
-
-        // Target form elements explicitly via contactForm variable
-        const formData = new FormData(contactForm);
-
-        try {
-          const response = await fetch(contactForm.action, {
-            method: "POST",
-            body: formData,
-            headers: {
-              "Accept": "application/json"
-            }
-          });
-
-          if (response.ok) {
-            alert("Thank you! Your message has been sent successfully.");
-            contactForm.reset();
-            generateCaptcha();
-          } else {
-            throw new Error("Server communication error.");
-          }
-
-        } catch (error) {
-          console.error("Submission Error:", error);
-          alert("Oops! Something went wrong delivering your message. Please try again.");
-        } finally {
-          // Restore button UI state
-          submitButton.disabled = false;
-          submitButton.innerText = "Send Message";
-        }
-      });
-    }
-  </script>
+      } catch (error) {
+        console.error("Submission Error:", error);
+        showMessage("error", "❌ Something went wrong. Please try again.");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerText = "Send Message";
+      }
+    });
+  }
+</script>
 </body>
 </html>
